@@ -115,62 +115,82 @@ elif choix == list_choix[2]:
                     st.error(f"Erreur lors de la lecture : {str(e)}")
 
     elif st.session_state.get("mode") == "prebuilt":
-        st.markdown("### Fichiers disponibles")
+    st.markdown("### Fichiers disponibles")
 
-        # Onglets pour une navigation très propre
-        tab_voiture, tab_moto, tab_location = st.tabs([" Voitures", " Motos & Scooters", " Locations"])
+    # Onglets pour une navigation très propre
+    tab_voiture, tab_moto, tab_location = st.tabs([" Voitures", " Motos & Scooters", " Locations"])
 
-        data_path = r"C:\Users\INGENIEUR KING\Desktop\projet_dc\data"
+    # ────────────────────────────────────────────────
+    # IMPORTANT : Chemin RELATIF → fonctionne local + cloud
+    # Les fichiers doivent être dans le dossier data/ à la racine du repo GitHub
+    # ────────────────────────────────────────────────
+    import os
 
-        with tab_voiture:
-            if st.button("Afficher les données Voitures", use_container_width=True, key="btn_voit"):
-                with st.spinner("Chargement..."):
-                    try:
-                        df = pd.read_csv(f"{data_path}/dakar_auto_sitemap.csv")
-                        st.session_state.df_affiche = df
-                        st.session_state.titre_df = "Voitures  dakar_auto_sitemap.csv"
-                    except Exception as e:
-                        st.error(f"Erreur : {str(e)}")
+    # Option la plus robuste (recommandée)
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DATA_FOLDER = os.path.join(BASE_DIR, "data")
 
-        with tab_moto:
-            if st.button("Afficher les données Motos", use_container_width=True, key="btn_moto"):
-                with st.spinner("Chargement..."):
-                    try:
-                        df = pd.read_csv(f"{data_path}/dakar_motos_scooters.csv")
-                        st.session_state.df_affiche = df
-                        st.session_state.titre_df = "Motos & Scooters  dakar_motos_scooters.csv"
-                    except Exception as e:
-                        st.error(f"Erreur : {str(e)}")
+    # Ou version ultra-simple (suffit dans 95 % des cas sur Streamlit)
+    # DATA_FOLDER = "data"
 
-        with tab_location:
-            if st.button("Afficher les données Locations", use_container_width=True, key="btn_loc"):
-                with st.spinner("Chargement..."):
-                    try:
-                        df = pd.read_csv(f"{data_path}/dakar_location_voitures.csv")
-                        st.session_state.df_affiche = df
-                        st.session_state.titre_df = "Locations  dakar_location_voitures.csv"
-                    except Exception as e:
-                        st.error(f"Erreur : {str(e)}")
+    with tab_voiture:
+        if st.button("Afficher les données Voitures", use_container_width=True, key="btn_voit"):
+            with st.spinner("Chargement..."):
+                try:
+                    file_path = os.path.join(DATA_FOLDER, "dakar_auto_sitemap.csv")
+                    df = pd.read_csv(file_path)
+                    st.session_state.df_affiche = df
+                    st.session_state.titre_df = "Voitures - dakar_auto_sitemap.csv"
+                except FileNotFoundError:
+                    st.error(f"Fichier non trouvé : {file_path}\nVérifie que le fichier est bien dans le dossier data/ sur GitHub.")
+                except Exception as e:
+                    st.error(f"Erreur lors du chargement : {str(e)}")
 
-        # Affichage unique du dataframe sélectionné
-        if "df_affiche" in st.session_state:
-            st.markdown(f" ##{st.session_state.titre_df}")
-            st.dataframe(
-                st.session_state.df_affiche,
-                use_container_width=True,
-                hide_index=True,
-                column_config={
-                    col: st.column_config.TextColumn(col, width="medium")
-                    for col in st.session_state.df_affiche.columns[:5]  # exemple
-                }
-            )
+    with tab_moto:
+        if st.button("Afficher les données Motos", use_container_width=True, key="btn_moto"):
+            with st.spinner("Chargement..."):
+                try:
+                    file_path = os.path.join(DATA_FOLDER, "dakar_motos_scooters.csv")
+                    df = pd.read_csv(file_path)
+                    st.session_state.df_affiche = df
+                    st.session_state.titre_df = "Motos & Scooters - dakar_motos_scooters.csv"
+                except FileNotFoundError:
+                    st.error(f"Fichier non trouvé : {file_path}\nVérifie que le fichier est bien dans le dossier data/ sur GitHub.")
+                except Exception as e:
+                    st.error(f"Erreur lors du chargement : {str(e)}")
 
-            if st.button(" Effacer l'affichage", type="primary"):
-                if "df_affiche" in st.session_state:
-                    del st.session_state.df_affiche
-                if "titre_df" in st.session_state:
-                    del st.session_state.titre_df
-                st.rerun()
+    with tab_location:
+        if st.button("Afficher les données Locations", use_container_width=True, key="btn_loc"):
+            with st.spinner("Chargement..."):
+                try:
+                    file_path = os.path.join(DATA_FOLDER, "dakar_location_voitures.csv")
+                    df = pd.read_csv(file_path)
+                    st.session_state.df_affiche = df
+                    st.session_state.titre_df = "Locations - dakar_location_voitures.csv"
+                except FileNotFoundError:
+                    st.error(f"Fichier non trouvé : {file_path}\nVérifie que le fichier est bien dans le dossier data/ sur GitHub.")
+                except Exception as e:
+                    st.error(f"Erreur lors du chargement : {str(e)}")
+
+    # Affichage unique du dataframe sélectionné
+    if "df_affiche" in st.session_state:
+        st.markdown(f"## {st.session_state.titre_df}")
+        st.dataframe(
+            st.session_state.df_affiche,
+            use_container_width=True,
+            hide_index=True,
+            column_config={
+                col: st.column_config.TextColumn(col, width="medium")
+                for col in st.session_state.df_affiche.columns[:5]  # exemple
+            }
+        )
+
+        if st.button("Effacer l'affichage", type="primary"):
+            if "df_affiche" in st.session_state:
+                del st.session_state.df_affiche
+            if "titre_df" in st.session_state:
+                del st.session_state.titre_df
+            st.rerun()
         
 elif choix == list_choix[3]:
     st.title("Dashboard")
@@ -368,4 +388,5 @@ elif choix == list_choix[4]:
         type="primary",
         use_container_width=True,
         icon=":material/folder_open:"
+
 )
