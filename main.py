@@ -36,11 +36,11 @@ url_2= 'https://dakar-auto.com/senegal/motos-and-scooters-3'
 url_3= 'https://dakar-auto.com/senegal/location-de-voitures-19'
 
 # -------------------------------------------------------------------------
-# Liste des options (mets-la au début, après les imports)
+# Liste des options – à mettre au tout début du fichier (après les imports)
 # -------------------------------------------------------------------------
 list_choix = ["", "Scraping BSoup", "download_web scraping", "Dashbord", "Evaluation"]
 
-# Icônes (ajuste les noms exacts de tes fichiers)
+# Icônes (mets les noms exacts de tes fichiers)
 icons = {
     "Scraping BSoup": "image/sb.jpeg",
     "download_web scraping": "image/Dow.jpeg",
@@ -49,41 +49,56 @@ icons = {
 }
 
 # -------------------------------------------------------------------------
-# SIDEBAR
+# SIDEBAR AVEC BOUTONS ET ICÔNES
 # -------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("### Mode")
     nb_page = st.selectbox("Pages à scraper", range(1, 2774))
 
-    # Variable choix initialisée à None
-    choix = None
+    # Initialisation persistante du choix
+    if 'choix' not in st.session_state:
+        st.session_state.choix = list_choix[0]  # accueil par défaut
 
-    # Boutons avec icônes
-    for opt in list_choix[1:]:
+    # Génération des boutons
+    for opt in list_choix[1:]:  # saute l'option vide ""
         col1, col2 = st.columns([1, 4])
         with col1:
             try:
                 st.image(icons[opt], width=36)
             except:
-                st.image("image/default.jpeg", width=36)
+                st.image("image/default.jpeg", width=36)  # image par défaut si erreur
         with col2:
             if st.button(opt, key=f"btn_{opt}", use_container_width=True):
-                choix = opt
+                st.session_state.choix = opt
+                st.rerun()  # Recharge immédiatement pour afficher le nouveau mode
 
 # -------------------------------------------------------------------------
-# PAGE PRINCIPALE
+# PAGE PRINCIPALE – On utilise la valeur persistante
 # -------------------------------------------------------------------------
-# Si aucun bouton cliqué → page d'accueil
-if choix is None:
-    st.title("Bienvenue chez DAKAR MOBILITY HUB")
+choix = st.session_state.choix
+
+# Page d'accueil quand choix == "" (option vide)
+if choix == list_choix[0]:
+    st.markdown("# Bienvenue chez DAKAR MOBILITY HUB")
     st.image("image/1.jpeg", use_container_width=True)
     st.caption("Véhicules • Motos • Scooters • Locations – Dakar")
     st.markdown("Sélectionnez une option dans la barre latérale")
-else:
-    # Ici tu mets le code des autres pages (scraping, dashboard, etc.)
-    st.markdown(f"## Mode sélectionné : {choix}")
-    # ... ton code existant pour chaque mode
 
+# Autres modes – développe ici selon tes besoins
+else:
+    st.title(f"Mode sélectionné : {choix}")
+    st.markdown(f"Vous êtes maintenant en mode **{choix}**")
+
+    # Exemple : tu peux ajouter le contenu spécifique ici
+    if choix == "Scraping BSoup":
+        st.write("Ici ton code de scraping avec BeautifulSoup...")
+        # ... ton code scraping ...
+    elif choix == "download_web scraping":
+        st.write("Ici le code pour télécharger les données...")
+    elif choix == "Dashbord":
+        st.write("Ici ton dashboard avec graphiques...")
+    elif choix == "Evaluation":
+        st.write("Ici l'évaluation des données...")
 # MENU DE CHOIX
 
 if choix == list_choix[0]:
@@ -479,6 +494,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
