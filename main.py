@@ -496,12 +496,13 @@ elif choix == list_choix[4]:
 
     st.link_button(
         "Google Forms  Mes formulaires",
-        "https://docs.google.com/forms/u/0/",
+        "https://docs.google.com/forms/d/e/1FAIpQLSelIrqjlJ1YV5Z6P8tg6vz1FfREa1ce5keI6WX1NCD2pwe2HA/viewform?usp=dialog",
         type="primary",
         use_container_width=True,
         icon=":material/folder_open:"
 
 )
+
 
 
 
