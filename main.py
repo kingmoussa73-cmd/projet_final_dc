@@ -35,11 +35,19 @@ url_2= 'https://dakar-auto.com/senegal/motos-and-scooters-3'
 url_3= 'https://dakar-auto.com/senegal/location-de-voitures-19'
 
 
-list_choix = ["", "Scraping BSoup", "download_web scraping", "Dashbord", "Evaluation"]
-# CREATION DE LA SIDEBAR POUR LE CHOIX
-with st.sidebar:
-    nb_page = st.selectbox("Sélectionnez le nombre de page à scrapper", range(1, 2774))
-    choix = st.selectbox("Sélectionnez une option", list_choix)
+if choix == list_choix[0]:
+    st.markdown("# Bienvenue dans l'application ")
+
+    # Affichage de l'image depuis le dossier image/
+    try:
+        # Chemin relatif simple (marche le mieux sur Streamlit Cloud)
+        st.image("image/1.jpg", use_container_width=True)
+        # Ou avec caption et ajustement
+        # st.image("1.jpg", caption="Marché automobile vibrant à Dakar", use_container_width=True)
+    except Exception as e:
+        st.warning(f"Impossible d'afficher l'image : {e}\nVérifie que 'image/accueil_voitures.jpg' existe dans le repo GitHub.")
+
+    st.markdown("### Veuillez sélectionner une option")
 
 # MENU DE CHOIX
 
@@ -390,4 +398,5 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
