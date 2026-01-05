@@ -35,7 +35,7 @@ url_1 = 'https://dakar-auto.com/senegal/voitures-4'
 url_2= 'https://dakar-auto.com/senegal/motos-and-scooters-3'
 url_3= 'https://dakar-auto.com/senegal/location-de-voitures-19'
 
-
+list_choix = ["", "Scraping BSoup", "download_web scraping", "Dashbord", "Evaluation"]
 # Icônes pour chaque option (ajuste les noms si besoin)
 icons = {
     "Scraping BSoup": "image/sb.jpeg",
@@ -463,6 +463,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
