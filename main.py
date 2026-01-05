@@ -49,11 +49,11 @@ if choix == list_choix[0]:
     # Affichage de l'image depuis le dossier image/
     try:
         # Chemin relatif simple (marche le mieux sur Streamlit Cloud)
-        st.image("image/1.jpg", use_container_width=True)
+        st.image("image/1.JPEG", use_container_width=True)
         # Ou avec caption et ajustement
-        # st.image("1.jpg", caption="Marché automobile vibrant à Dakar", use_container_width=True)
+        # st.image("1.JPEG", caption="Marché automobile vibrant à Dakar", use_container_width=True)
     except Exception as e:
-        st.warning(f"Impossible d'afficher l'image : {e}\nVérifie que 'image/1.jpg' existe dans le repo GitHub.")
+        st.warning(f"Impossible d'afficher l'image : {e}\nVérifie que 'image/1.JPEG' existe dans le repo GitHub.")
     
 elif choix == list_choix[1]:  # "Scraping BSoup"
     st.markdown("<h1>Scraping des données avec BeautifulSoup</h1>", unsafe_allow_html=True)
@@ -398,6 +398,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
