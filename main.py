@@ -36,11 +36,11 @@ url_2= 'https://dakar-auto.com/senegal/motos-and-scooters-3'
 url_3= 'https://dakar-auto.com/senegal/location-de-voitures-19'
 
 # -------------------------------------------------------------------------
-# Liste des options – à mettre au tout début du fichier (après les imports)
+# Liste des options – au début du fichier après les imports
 # -------------------------------------------------------------------------
 list_choix = ["", "Scraping BSoup", "download_web scraping", "Dashbord", "Evaluation"]
 
-# Icônes (mets les noms exacts de tes fichiers)
+# Icônes (ajuste selon tes fichiers)
 icons = {
     "Scraping BSoup": "image/sb.jpeg",
     "download_web scraping": "image/Dow.jpeg",
@@ -49,56 +49,64 @@ icons = {
 }
 
 # -------------------------------------------------------------------------
-# SIDEBAR AVEC BOUTONS ET ICÔNES
+# SIDEBAR
 # -------------------------------------------------------------------------
 with st.sidebar:
     st.markdown("### Mode")
     nb_page = st.selectbox("Pages à scraper", range(1, 2774))
 
-    # Initialisation persistante du choix
+    # Initialisation persistante
     if 'choix' not in st.session_state:
-        st.session_state.choix = list_choix[0]  # accueil par défaut
+        st.session_state.choix = list_choix[0]
 
-    # Génération des boutons
-    for opt in list_choix[1:]:  # saute l'option vide ""
+    # Boutons avec icônes
+    for opt in list_choix[1:]:
         col1, col2 = st.columns([1, 4])
         with col1:
             try:
                 st.image(icons[opt], width=36)
             except:
-                st.image("image/default.jpeg", width=36)  # image par défaut si erreur
+                st.image("image/default.jpeg", width=36)
         with col2:
             if st.button(opt, key=f"btn_{opt}", use_container_width=True):
                 st.session_state.choix = opt
-                st.rerun()  # Recharge immédiatement pour afficher le nouveau mode
+                st.rerun()
 
 # -------------------------------------------------------------------------
-# PAGE PRINCIPALE – On utilise la valeur persistante
+# PAGE PRINCIPALE
 # -------------------------------------------------------------------------
 choix = st.session_state.choix
 
-# Page d'accueil quand choix == "" (option vide)
+# Bouton "Retour à l'accueil" – visible dans TOUS les modes sauf l'accueil
+if choix != list_choix[0]:
+    if st.button("← Retour à l'accueil", type="primary", use_container_width=True):
+        st.session_state.choix = list_choix[0]
+        st.rerun()
+
+# -------------------------------------------------------------------------
+# AFFICHAGE SELON LE CHOIX
+# -------------------------------------------------------------------------
 if choix == list_choix[0]:
-    st.markdown("# Bienvenue chez DAKAR MOBILITY HUB")
+    # Page d'accueil
+    st.title("Bienvenue chez DAKAR MOBILITY HUB")
     st.image("image/1.jpeg", use_container_width=True)
     st.caption("Véhicules • Motos • Scooters • Locations – Dakar")
     st.markdown("Sélectionnez une option dans la barre latérale")
 
-# Autres modes – développe ici selon tes besoins
 else:
-    st.title(f"Mode sélectionné : {choix}")
-    st.markdown(f"Vous êtes maintenant en mode **{choix}**")
+    # Mode sélectionné
+    st.title(f"Menu : {choix}")
 
-    # Exemple : tu peux ajouter le contenu spécifique ici
+    # Contenu spécifique à chaque mode (à compléter)
     if choix == "Scraping BSoup":
-        st.write("Ici ton code de scraping avec BeautifulSoup...")
+        st.write("Votre interface de scraping")
         # ... ton code scraping ...
     elif choix == "download_web scraping":
-        st.write("Ici le code pour télécharger les données...")
+        st.write("le téléchargement des données")
     elif choix == "Dashbord":
-        st.write("Ici ton dashboard avec graphiques...")
+        st.write("Representaion Graphique")
     elif choix == "Evaluation":
-        st.write("Ici l'évaluation des données...")
+        st.write(" l'évaluation des données par des formulaires")
 # MENU DE CHOIX
 
 if choix == list_choix[0]:
@@ -494,6 +502,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
