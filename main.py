@@ -46,11 +46,14 @@ with st.sidebar:
 if choix == list_choix[0]:
     st.markdown("# Bienvenue dans l'application")
 
-    # Debug rapide (supprime cette ligne quand ça marche)
-    if os.path.exists("image"):
-        st.info("Images trouvées : " + ", ".join(os.listdir("image")))
+    # Debug rapide pour voir les images disponibles
+    image_dir = "image"
+    if os.path.exists(image_dir):
+        st.info("Images trouvées : " + ", ".join(os.listdir(image_dir)))
+    else:
+        st.warning("Dossier 'image' non trouvé")
 
-    # Affichage de l'image (nom exact confirmé sur GitHub)
+    # Affichage de l'image
     st.image("image/1.jpeg", use_container_width=True)
 
     st.markdown("### Veuillez sélectionner une option dans la barre latérale")
@@ -398,6 +401,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
