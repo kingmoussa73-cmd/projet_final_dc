@@ -36,11 +36,37 @@ url_2= 'https://dakar-auto.com/senegal/motos-and-scooters-3'
 url_3= 'https://dakar-auto.com/senegal/location-de-voitures-19'
 
 
-list_choix = ["", "Scraping BSoup", "download_web scraping", "Dashbord", "Evaluation"]
-# CREATION DE LA SIDEBAR POUR LE CHOIX
+# Icônes pour chaque option (ajuste les noms si besoin)
+icons = {
+    "Scraping BSoup": "image/sb.jpeg",
+    "download_web scraping": "image/Dow.jpeg",
+    "Dashbord": "image/Dash.jpeg",
+    "Evaluation": "image/EV.jpeg",
+}
+
+# SIDEBAR SIMPLIFIÉE
 with st.sidebar:
-    nb_page = st.selectbox("Sélectionnez le nombre de page à scrapper", range(1, 2774))
-    choix = st.selectbox("Sélectionnez une option", list_choix)
+    st.markdown("### Mode")
+    nb_page = st.selectbox("Pages à scraper", range(1, 2774))
+
+    # Boutons avec icônes
+    for opt in list_choix[1:]:  # saute l'option vide
+        col1, col2 = st.columns([1, 4])
+        with col1:
+            try:
+                st.image(icons[opt], width=36)
+            except:
+                st.image("image/default.jpeg", width=36)  # fallback
+        with col2:
+            if st.button(opt, key=f"btn_{opt}", use_container_width=True):
+                choix = opt
+
+# PAGE D'ACCUEIL (quand rien choisi)
+if choix is None or choix == "":
+    st.markdown("# Bienvenue chez DAKAR MOBILITY HUB")
+    st.image("image/1.jpeg", use_container_width=True)
+    st.caption("Véhicules • Motos • Scooters • Locations – Dakar", unsafe_allow_html=True)
+    st.markdown("Sélectionnez une option dans la barre latérale")
 
 # MENU DE CHOIX
 
@@ -437,6 +463,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
