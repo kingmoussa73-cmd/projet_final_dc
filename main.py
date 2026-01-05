@@ -164,11 +164,22 @@ elif choix == "download_web scraping":
                 st.rerun()
 
 elif choix == "Dashbord":
-    st.title("Dashboard")
-    tab1, tab2 = st.tabs(["Scraping récent", "Fichier CSV"])
-    # ... ton code dashboard ici (histogramme, etc.)
+    import os
+    import glob
+    
+    csv_files = glob.glob("*.csv") + glob.glob("data/*.csv") + glob.glob("output/*.csv")
+    if csv_files:
+        most_recent = max(csv_files, key=os.path.getmtime)
+        st.info(f"Dernier CSV détecté : {most_recent}")
+        st.info(f"Date : {os.path.getmtime(most_recent)} → {os.path.getctime(most_recent)}")
+    else:
+        st.error("AUCUN fichier CSV trouvé dans le dossier courant ou data/")
+        st.title("Dashboard")
+        tab1, tab2 = st.tabs(["Scraping récent", "Fichier CSV"])
+        # ... ton code dashboard ici (histogramme, etc.)
 
 elif choix == "Evaluation":
     st.title("Accéder à mes formulaires")
     st.link_button("KoBoToolbox", "https://ee.kobotoolbox.org/x/CBgfDgVK", type="primary", use_container_width=True)
     st.link_button("Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSelIrqjlJ1YV5Z6P8tg6vz1FfREa1ce5keI6WX1NCD2pwe2HA/viewform?usp=dialog", type="primary", use_container_width=True)
+
