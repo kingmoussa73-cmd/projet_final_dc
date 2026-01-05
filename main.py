@@ -45,25 +45,54 @@ with st.sidebar:
 # MENU DE CHOIX
 
 if choix == list_choix[0]:
-    st.markdown("# Bienvenue dans l'application")
-
-    # Image centrée + plus élégante
-    col1, col2, col3 = st.columns([1, 3, 1])  # centrage horizontal
-    with col2:
-        st.image("image/1.jpeg", use_column_width=True)
-
-    # Légende stylée
     st.markdown(
         """
-        <p style="text-align: center; font-size: 1.3rem; color: #1e3a8a; margin-top: 1rem;">
-            <strong>DAKAR MOBILITY HUB</strong><br>
-            Véhicules • Motos • Scooters • Locations – Dakar
+        <style>
+            .welcome-title {
+                text-align: center;
+                color: #1e3a8a;
+                font-size: 2.8rem;
+                margin-bottom: 0.5rem;
+                text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+            }
+            .welcome-subtitle {
+                text-align: center;
+                color: #444;
+                font-size: 1.3rem;
+                margin-bottom: 2rem;
+            }
+            .image-container {
+                border-radius: 16px;
+                overflow: hidden;
+                box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            }
+            .image-container img {
+                width: 100%;
+                display: block;
+            }
+        </style>
+        """,
+        unsafe_allow_html=True
+    )
+
+    st.markdown('<h1 class="welcome-title">Bienvenue chez DAKAR MOBILITY HUB</h1>', unsafe_allow_html=True)
+    st.markdown('<p class="welcome-subtitle">Véhicules • Motos • Scooters • Locations – Dakar</p>', unsafe_allow_html=True)
+
+    with st.container():
+        st.markdown('<div class="image-container">', unsafe_allow_html=True)
+        st.image("image/1.jpeg", use_container_width=True)
+        st.markdown('</div>', unsafe_allow_html=True)
+
+    st.markdown(
+        """
+        <p style="text-align: center; font-size: 1.1rem; color: #555; margin-top: 1.5rem;">
+            Découvrez notre plateforme pour gérer, scraper et analyser le marché automobile à Dakar
         </p>
         """,
         unsafe_allow_html=True
     )
 
-    st.markdown("### Sélectionnez une option dans la barre latérale")
+    st.markdown("### → Sélectionnez une option dans la barre latérale")
     
 elif choix == list_choix[1]:  # "Scraping BSoup"
     st.markdown("<h1>Scraping des données avec BeautifulSoup</h1>", unsafe_allow_html=True)
@@ -408,6 +437,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
