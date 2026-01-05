@@ -47,17 +47,23 @@ with st.sidebar:
 if choix == list_choix[0]:
     st.markdown("# Bienvenue dans l'application")
 
-    # Debug rapide pour voir les images disponibles
-    image_dir = "image"
-    if os.path.exists(image_dir):
-        st.info("Images trouvées : " + ", ".join(os.listdir(image_dir)))
-    else:
-        st.warning("Dossier 'image' non trouvé")
+    # Image centrée + plus élégante
+    col1, col2, col3 = st.columns([1, 3, 1])  # centrage horizontal
+    with col2:
+        st.image("image/1.jpeg", use_column_width=True)
 
-    # Affichage de l'image
-    st.image("image/1.jpeg", use_container_width=True)
+    # Légende stylée
+    st.markdown(
+        """
+        <p style="text-align: center; font-size: 1.3rem; color: #1e3a8a; margin-top: 1rem;">
+            <strong>DAKAR MOBILITY HUB</strong><br>
+            Véhicules • Motos • Scooters • Locations – Dakar
+        </p>
+        """,
+        unsafe_allow_html=True
+    )
 
-    st.markdown("### Veuillez sélectionner une option dans la barre latérale")
+    st.markdown("### Sélectionnez une option dans la barre latérale")
     
 elif choix == list_choix[1]:  # "Scraping BSoup"
     st.markdown("<h1>Scraping des données avec BeautifulSoup</h1>", unsafe_allow_html=True)
@@ -402,6 +408,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
