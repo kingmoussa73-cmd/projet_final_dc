@@ -2,6 +2,7 @@ from fonction import *
 import streamlit as st 
 import pandas as pd
 import numpy as np
+import os
 
 
 st.markdown("""
@@ -401,6 +402,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
