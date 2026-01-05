@@ -54,7 +54,7 @@ icons = {
 # ────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### Mode")
-    nb_page = st.selectbox("Pages à scraper", range(1, 100), index=0)  # limité à 100 pour éviter abus
+    nb_page = st.selectbox("Pages à scraper", range(1, 51), index=0)  # limité pour éviter abus
 
     if 'choix' not in st.session_state:
         st.session_state.choix = list_choix[0]
@@ -79,18 +79,15 @@ if choix != list_choix[0]:
         st.rerun()
 
 # ────────────────────────────────────────────────
-# Fonction de nettoyage du prix (très importante pour les graphiques)
+# Fonction nettoyage prix
 # ────────────────────────────────────────────────
 def clean_prix(value):
     if pd.isna(value):
         return np.nan
     s = str(value).strip()
-    # Supprimer unités, mots parasites, caractères indésirables
-    for mot in ['F CFA', 'Fcfa', 'fcfa', 'CFA', 'Prix', ':', 'strong', 'FCFA', 'Fcfa', '€', '$', '€uro']:
+    for mot in ['F CFA', 'Fcfa', 'fcfa', 'CFA', 'Prix', ':', 'strong', 'FCFA', 'Fcfa', '€', '$', '€uro', 'FCFA']:
         s = s.replace(mot, '')
-    # Supprimer espaces non-breaking, espaces normaux, points, virgules comme séparateurs de milliers
     s = s.replace('\xa0', '').replace(' ', '').replace('.', '').replace(',', '')
-    # Garder uniquement les chiffres
     s = ''.join(c for c in s if c.isdigit())
     try:
         return int(s) if s else np.nan
@@ -112,25 +109,47 @@ elif choix == "Scraping BSoup":
     col1, col2, col3 = st.columns(3)
     action = None
 
-    with col1: if st.button("Voiture", use_container_width=True):          action = "voiture"
-    with col2: if st.button("Moto",    use_container_width=True):          action = "moto"
-    with col3: if st.button("Location Véhicule", use_container_width=True): action = "location"
+    with col1:
+        if st.button("Voiture", use_container_width=True):
+            action = "voiture"
+            
+    with col2:
+        if st.button("Moto", use_container_width=True):
+            action = "moto"
+            
+    with col3:
+        if st.button("Location Véhicule", use_container_width=True):
+            action = "location"
 
     if action:
         with st.spinner("Scraping en cours..."):
-            if action == "voiture":   df = scrape_data(url_1, nb_page)
-            elif action == "moto":    df = scrape_data(url_2, nb_page)
-            elif action == "location": df = scrape_data(url_3, nb_page)
+            try:
+                if action == "voiture":
+                    df = scrape_data(url_1, nb_page)
+                elif action == "moto":
+                    df = scrape_data(url_2, nb_page)
+                elif action == "location":
+                    df = scrape_data(url_3, nb_page)
 
-            if df is not None and not df.empty:
-                st.success(f"{len(df):,} annonces récupérées")
-                st.dataframe(df, use_container_width=True)
-            else:
-                st.warning("Aucune donnée récupérée – vérifiez les URLs ou la fonction scrape_data()")
+                if df is not None and not df.empty:
+                    st.success(f"{len(df):,} annonces récupérées")
+                    # Option : sauvegarde automatique
+                    os.makedirs("data", exist_ok=True)
+                    timestamp = datetime.now().strftime("%Y%m%d_%Hh%M")
+                    chemin = f"data/dakar_{action}_{timestamp}.csv"
+                    df.to_csv(chemin, index=False, encoding='utf-8-sig')
+                    st.info(f"Données sauvegardées → {chemin}")
+                    st.dataframe(df.head(1000), use_container_width=True)
+                else:
+                    st.warning("Aucune donnée récupérée")
+                    
+            except Exception as e:
+                st.error(f"Erreur pendant le scraping : {str(e)}")
 
 elif choix == "download_web scraping":
     st.subheader("Gestion des fichiers CSV")
     col1, col2 = st.columns(2)
+    
     with col1:
         if st.button("Téléverser un fichier CSV local", use_container_width=True):
             st.session_state.mode = "upload"
@@ -140,7 +159,7 @@ elif choix == "download_web scraping":
 
     if st.session_state.get("mode") == "upload":
         fichier = st.file_uploader(" ", type="csv", label_visibility="collapsed")
-        if fichier:
+        if fichier is not None:
             try:
                 df = pd.read_csv(fichier)
                 st.success(f"Fichier chargé — {len(df):,} lignes")
@@ -157,20 +176,20 @@ elif choix == "download_web scraping":
             selected = st.selectbox("Choisir un fichier", [os.path.basename(f) for f in fichiers])
             if st.button("Afficher", type="primary"):
                 try:
-                    df = pd.read_csv(os.path.join(DATA_FOLDER, selected))
+                    df = pd.read_csv(os.path.join(DATA_FOLDER, selected), low_memory=False)
                     st.session_state.df_show = df
                     st.session_state.show_title = selected
                 except Exception as e:
-                    st.error(e)
+                    st.error(f"Erreur : {e}")
         else:
             st.info("Aucun fichier CSV dans le dossier data/")
 
         if "df_show" in st.session_state:
             st.markdown(f"## {st.session_state.show_title}")
             st.dataframe(st.session_state.df_show, use_container_width=True)
-            if st.button("Effacer affichage"):
-                del st.session_state.df_show
-                del st.session_state.show_title
+            if st.button("Effacer affichage", type="secondary"):
+                for k in ["df_show", "show_title"]:
+                    st.session_state.pop(k, None)
                 st.rerun()
 
 elif choix == "Dashbord":
@@ -202,7 +221,7 @@ elif choix == "Dashbord":
                 if 'prix' in df.columns:
                     df['prix_numeric'] = df['prix'].apply(clean_prix)
                     valides = df['prix_numeric'].notna().sum()
-                    st.info(f"Prix convertis en nombre : {valides} / {len(df)} ({valides/len(df)*100:.1f}%)")
+                    st.info(f"Prix convertis en nombre : {valides:,} / {len(df):,} ({valides/len(df)*100:.1f}%)")
 
                 st.markdown("### Aperçu")
                 st.dataframe(df.head(1000), use_container_width=True)
@@ -220,11 +239,12 @@ elif choix == "Dashbord":
                         ax.set_ylabel("Nombre d'annonces")
                         st.pyplot(fig)
                     else:
-                        st.warning("Pas assez de prix numériques valides")
+                        st.warning("Pas assez de prix numériques valides pour un histogramme")
 
                 with col_g2:
-                    if 'annee' in df.columns:
-                        df['annee_num'] = pd.to_numeric(df['annee'], errors='coerce')
+                    if 'annee' in df.columns or 'année' in df.columns:
+                        col_annee = 'annee' if 'annee' in df.columns else 'année'
+                        df['annee_num'] = pd.to_numeric(df[col_annee], errors='coerce')
                         annees = df['annee_num'].dropna().value_counts().sort_index()
                         if len(annees) > 0:
                             st.markdown("**Années des véhicules**")
@@ -234,24 +254,24 @@ elif choix == "Dashbord":
                             st.pyplot(fig2)
 
             except Exception as e:
-                st.error(f"Erreur lors de la lecture du fichier :\n{e}")
+                st.error(f"Erreur lecture fichier : {str(e)}")
         else:
             st.warning("Aucun fichier CSV trouvé dans data/")
-            st.info("Effectuez un scraping et sauvegardez les données pour voir le dashboard.")
+            st.info("Faites un scraping et laissez-le se sauvegarder automatiquement.")
 
     with tab2:
         st.subheader("Ouvrir un autre fichier")
         csv_files = glob.glob(os.path.join(DATA_FOLDER, "*.csv"))
         if csv_files:
             choix_f = st.selectbox("Fichier", [os.path.basename(f) for f in csv_files])
-            if st.button("Charger", type="primary"):
+            if st.button("Charger & afficher", type="primary"):
                 try:
-                    df = pd.read_csv(os.path.join(DATA_FOLDER, choix_f))
+                    df = pd.read_csv(os.path.join(DATA_FOLDER, choix_f), low_memory=False)
                     st.dataframe(df, use_container_width=True)
                 except Exception as e:
-                    st.error(e)
+                    st.error(f"Erreur : {e}")
         else:
-            st.info("Aucun .csv disponible")
+            st.info("Aucun fichier .csv disponible dans data/")
 
 elif choix == "Evaluation":
     st.title("Accéder à mes formulaires")
