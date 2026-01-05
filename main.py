@@ -44,16 +44,16 @@ with st.sidebar:
 # MENU DE CHOIX
 
 if choix == list_choix[0]:
-    st.markdown("# Bienvenue dans l'application ")
+    st.markdown("# Bienvenue dans l'application")
 
-    # Affichage de l'image depuis le dossier image/
-    try:
-        # Chemin relatif simple (marche le mieux sur Streamlit Cloud)
-        st.image("image/1.JPEG", use_container_width=True)
-        # Ou avec caption et ajustement
-        # st.image("1.JPEG", caption="Marché automobile vibrant à Dakar", use_container_width=True)
-    except Exception as e:
-        st.warning(f"Impossible d'afficher l'image : {e}\nVérifie que 'image/1.JPEG' existe dans le repo GitHub.")
+    # Debug rapide (supprime cette ligne quand ça marche)
+    if os.path.exists("image"):
+        st.info("Images trouvées : " + ", ".join(os.listdir("image")))
+
+    # Affichage de l'image (nom exact confirmé sur GitHub)
+    st.image("image/1.jpeg", use_container_width=True)
+
+    st.markdown("### Veuillez sélectionner une option dans la barre latérale")
     
 elif choix == list_choix[1]:  # "Scraping BSoup"
     st.markdown("<h1>Scraping des données avec BeautifulSoup</h1>", unsafe_allow_html=True)
@@ -398,6 +398,7 @@ elif choix == list_choix[4]:
         icon=":material/folder_open:"
 
 )
+
 
 
 
