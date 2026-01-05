@@ -1,10 +1,14 @@
-from fonction import *
+from fonction import *          # suppose que scrape_data() est dedans
 import streamlit as st
 import pandas as pd
 import numpy as np
 import os
+import glob
+from datetime import datetime
 
-# Style global (boutons + tableau)
+# ────────────────────────────────────────────────
+# Style global
+# ────────────────────────────────────────────────
 st.markdown("""
 <style>
     .stButton > button {
@@ -28,15 +32,15 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# URLs
+# ────────────────────────────────────────────────
+# URLs & choix
+# ────────────────────────────────────────────────
 url_1 = 'https://dakar-auto.com/senegal/voitures-4'
 url_2 = 'https://dakar-auto.com/senegal/motos-and-scooters-3'
 url_3 = 'https://dakar-auto.com/senegal/location-de-voitures-19'
 
-# Liste des options
 list_choix = ["", "Scraping BSoup", "download_web scraping", "Dashbord", "Evaluation"]
 
-# Icônes (ajuste les noms si besoin)
 icons = {
     "Scraping BSoup": "image/sb.jpeg",
     "download_web scraping": "image/Dow.jpeg",
@@ -44,16 +48,16 @@ icons = {
     "Evaluation": "image/EV.jpeg",
 }
 
+# ────────────────────────────────────────────────
 # SIDEBAR
+# ────────────────────────────────────────────────
 with st.sidebar:
     st.markdown("### Mode")
-    nb_page = st.selectbox("Pages à scraper", range(1, 2774))
+    nb_page = st.selectbox("Pages à scraper", range(1, 2774), index=0)
 
-    # Initialisation persistante du choix
     if 'choix' not in st.session_state:
         st.session_state.choix = list_choix[0]
 
-    # Boutons avec icônes
     for opt in list_choix[1:]:
         col1, col2 = st.columns([1, 4])
         with col1:
@@ -66,18 +70,17 @@ with st.sidebar:
                 st.session_state.choix = opt
                 st.rerun()
 
-# PAGE PRINCIPALE
+# Bouton retour (hors accueil)
 choix = st.session_state.choix
-
-# Bouton "Retour à l'accueil" (visible seulement hors accueil)
 if choix != list_choix[0]:
     if st.button("← Retour à l'accueil", type="primary", use_container_width=True):
         st.session_state.choix = list_choix[0]
         st.rerun()
 
-# AFFICHAGE SELON CHOIX
+# ────────────────────────────────────────────────
+# AFFICHAGE PRINCIPAL
+# ────────────────────────────────────────────────
 if choix == list_choix[0]:
-    # Page d'accueil
     st.title("Bienvenue chez DAKAR MOBILITY HUB")
     st.image("image/1.jpeg", use_container_width=True)
     st.caption("Véhicules • Motos • Scooters • Locations – Dakar")
@@ -99,18 +102,20 @@ elif choix == "Scraping BSoup":
         if st.button("Location Véhicule", use_container_width=True):
             action = "location"
 
-    if action == "voiture":
+    if action:
         with st.spinner("Scraping en cours..."):
-            df1 = scrape_data(url_1, nb_page)
-            st.dataframe(df1, use_container_width=True)
-    elif action == "moto":
-        with st.spinner("Scraping en cours..."):
-            df2 = scrape_data(url_2, nb_page)
-            st.dataframe(df2, use_container_width=True)
-    elif action == "location":
-        with st.spinner("Scraping en cours..."):
-            df3 = scrape_data(url_3, nb_page)
-            st.dataframe(df3, use_container_width=True)
+            if action == "voiture":
+                df = scrape_data(url_1, nb_page)
+            elif action == "moto":
+                df = scrape_data(url_2, nb_page)
+            elif action == "location":
+                df = scrape_data(url_3, nb_page)
+            
+            if df is not None and not df.empty:
+                st.success(f"{len(df)} annonces récupérées")
+                st.dataframe(df, use_container_width=True)
+            else:
+                st.warning("Aucune donnée récupérée – vérifiez les URLs / le scraping")
 
 elif choix == "download_web scraping":
     st.subheader("Gestion des fichiers CSV")
@@ -125,16 +130,14 @@ elif choix == "download_web scraping":
             st.session_state.mode = "prebuilt"
 
     if st.session_state.get("mode") == "upload":
-        st.info("Sélectionnez un fichier CSV depuis votre ordinateur.")
         fichier = st.file_uploader(" ", type="csv", label_visibility="collapsed")
-        if fichier is not None:
-            with st.spinner("Lecture..."):
-                try:
-                    df = pd.read_csv(fichier)
-                    st.success(f"Fichier chargé — {len(df):,} lignes")
-                    st.dataframe(df, use_container_width=True, hide_index=True)
-                except Exception as e:
-                    st.error(f"Erreur : {str(e)}")
+        if fichier:
+            try:
+                df = pd.read_csv(fichier)
+                st.success(f"Fichier chargé — {len(df):,} lignes")
+                st.dataframe(df, use_container_width=True, hide_index=True)
+            except Exception as e:
+                st.error(f"Erreur lecture : {e}")
 
     elif st.session_state.get("mode") == "prebuilt":
         st.markdown("### Fichiers disponibles")
@@ -143,43 +146,103 @@ elif choix == "download_web scraping":
         BASE_DIR = os.path.dirname(os.path.abspath(__file__))
         DATA_FOLDER = os.path.join(BASE_DIR, "data")
 
-        with tab_voiture:
-            if st.button("Afficher Voitures", use_container_width=True, key="btn_voit"):
-                with st.spinner("Chargement..."):
+        def afficher_fichier(fichier, titre):
+            chemin = os.path.join(DATA_FOLDER, fichier)
+            if os.path.exists(chemin):
+                if st.button(f"Afficher {titre}", use_container_width=True):
                     try:
-                        df = pd.read_csv(os.path.join(DATA_FOLDER, "dakar_auto_sitemap.csv"))
+                        df = pd.read_csv(chemin)
                         st.session_state.df_affiche = df
-                        st.session_state.titre_df = "Voitures - dakar_auto_sitemap.csv"
+                        st.session_state.titre_df = f"{titre} — {fichier}"
                     except Exception as e:
-                        st.error(f"Erreur : {str(e)}")
+                        st.error(f"Erreur : {e}")
+            else:
+                st.info(f"Fichier {fichier} introuvable dans /data/")
 
-        # ... (même logique pour tab_moto et tab_location – copie/colle si besoin)
+        with tab_voiture:
+            afficher_fichier("dakar_auto_sitemap.csv", "Voitures")   # adapte le nom réel
+
+        # Ajoute les autres onglets de la même façon quand tu auras les noms exacts
+        # with tab_moto:
+        #     afficher_fichier("motos_dernier.csv", "Motos & Scooters")
+        # with tab_location:
+        #     afficher_fichier("locations.csv", "Locations")
 
         if "df_affiche" in st.session_state:
             st.markdown(f"## {st.session_state.titre_df}")
             st.dataframe(st.session_state.df_affiche, use_container_width=True, hide_index=True)
             if st.button("Effacer", type="primary"):
-                del st.session_state.df_affiche
-                del st.session_state.titre_df
+                for k in ["df_affiche", "titre_df"]:
+                    st.session_state.pop(k, None)
                 st.rerun()
 
 elif choix == "Dashbord":
-    import os
-    import glob
-    
-    csv_files = glob.glob("*.csv") + glob.glob("data/*.csv") + glob.glob("output/*.csv")
-    if csv_files:
+    st.title("Dashboard")
+
+    tab1, tab2 = st.tabs(["Scraping récent", "Fichier CSV"])
+
+    DATA_FOLDER = "data"   # adapte si différent
+
+    def get_most_recent_csv(folder=DATA_FOLDER):
+        if not os.path.exists(folder):
+            return None, None
+        csv_files = glob.glob(os.path.join(folder, "*.csv"))
+        if not csv_files:
+            return None, None
         most_recent = max(csv_files, key=os.path.getmtime)
-        st.info(f"Dernier CSV détecté : {most_recent}")
-        st.info(f"Date : {os.path.getmtime(most_recent)} → {os.path.getctime(most_recent)}")
-    else:
-        st.error("AUCUN fichier CSV trouvé dans le dossier courant ou data/")
-        st.title("Dashboard")
-        tab1, tab2 = st.tabs(["Scraping récent", "Fichier CSV"])
-        # ... ton code dashboard ici (histogramme, etc.)
+        date_str = datetime.fromtimestamp(os.path.getmtime(most_recent)).strftime("%d/%m/%Y %H:%M")
+        return most_recent, date_str
+
+    with tab1:
+        st.subheader("Dernier scraping enregistré")
+        fichier, date = get_most_recent_csv()
+
+        if fichier:
+            st.info(f"Dernier fichier : **{os.path.basename(fichier)}**  \nDate : {date}")
+            try:
+                df = pd.read_csv(fichier, low_memory=False)
+                st.success(f"{len(df):,} lignes chargées")
+
+                # Aperçu rapide
+                st.markdown("### Aperçu des 1 000 premières lignes")
+                st.dataframe(df.head(1000), use_container_width=True)
+
+                # Quelques stats / graphiques simples
+                if 'prix' in df.columns:
+                    st.markdown("### Distribution des prix")
+                    fig_prix = df['prix'].dropna().plot(kind='hist', bins=40, title="Prix").figure
+                    st.pyplot(fig_prix)
+
+                if 'annee' in df.columns:
+                    st.markdown("### Années des véhicules")
+                    fig_annee = df['annee'].value_counts().sort_index().plot(kind='bar', title="Par année").figure
+                    st.pyplot(fig_annee)
+
+            except Exception as e:
+                st.error(f"Impossible de lire le fichier :\n{e}")
+        else:
+            st.warning("Aucun fichier CSV trouvé dans le dossier data/")
+            st.info("Lancez un scraping depuis l'onglet « Scraping BSoup » et sauvegardez le résultat.")
+
+    with tab2:
+        st.subheader("Choisir un autre fichier CSV")
+        if os.path.exists(DATA_FOLDER):
+            fichiers = sorted(glob.glob(os.path.join(DATA_FOLDER, "*.csv")))
+            if fichiers:
+                choix_fichier = st.selectbox("Fichier", [os.path.basename(f) for f in fichiers])
+                if st.button("Charger et afficher", type="primary"):
+                    try:
+                        chemin = os.path.join(DATA_FOLDER, choix_fichier)
+                        df = pd.read_csv(chemin, low_memory=False)
+                        st.dataframe(df, use_container_width=True)
+                    except Exception as e:
+                        st.error(f"Erreur : {e}")
+            else:
+                st.info("Aucun .csv dans data/")
+        else:
+            st.error("Dossier data/ introuvable")
 
 elif choix == "Evaluation":
     st.title("Accéder à mes formulaires")
     st.link_button("KoBoToolbox", "https://ee.kobotoolbox.org/x/CBgfDgVK", type="primary", use_container_width=True)
     st.link_button("Google Forms", "https://docs.google.com/forms/d/e/1FAIpQLSelIrqjlJ1YV5Z6P8tg6vz1FfREa1ce5keI6WX1NCD2pwe2HA/viewform?usp=dialog", type="primary", use_container_width=True)
-
